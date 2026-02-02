@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppPortal | Home</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.3) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(88, 28, 135, 0.3) 0, transparent 50%);
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent scroll issues with slide-in */
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .app-card {
+            cursor: pointer;
+        }
+        .app-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .transition-all {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Viewer Animation Classes */
+        #appViewer {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .viewer-closed {
+            transform: translateY(100%);
+        }
+        .viewer-open {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="app" class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div>
+                <h1 class="text-4xl font-bold tracking-tight text-white mb-2">AppPortal</h1>
+                <p class="text-slate-400">Select a tool to get started.</p>
+            </div>
+            
+            <div class="relative flex-grow max-w-md">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" id="searchInput" aria-label="Search apps" placeholder="Search apps..." 
+                    class="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-white placeholder-slate-500 transition-all">
+            </div>
+        </header>
+
+        <!-- Filter Tags -->
+        <div id="filterContainer" class="flex flex-wrap gap-2 mb-8">
+            <!-- Categories will be injected here -->
+        </div>
+
+        <!-- App Grid -->
+        <div id="appGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- App cards will be injected here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-slate-500">
+            <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-xl">No apps found matching your search.</p>
+        </div>
+    </div>
+
+    <!-- APP VIEWER OVERLAY (Slide-over) -->
+    <div id="appViewer" class="fixed inset-0 z-50 bg-slate-900 flex flex-col viewer-closed">
+        <!-- Viewer Header -->
+        <div class="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700 shadow-xl z-10">
+            <div class="flex items-center gap-4">
+                <button onclick="closeApp()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors border border-slate-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    Back to Portal
+                </button>
+                <div class="h-6 w-px bg-slate-600 mx-2 hidden sm:block"></div>
+                <h2 id="viewerTitle" class="text-lg font-semibold text-white truncate max-w-[200px] sm:max-w-md">App Name</h2>
+            </div>
+            
+            <div class="flex gap-2">
+                <a id="openExternalBtn" href="#" target="_blank" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700 transition-colors" title="Open in new tab">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Iframe Container -->
+        <div class="flex-grow w-full h-full bg-white relative">
+            <iframe id="appFrame" class="w-full h-full border-none" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * MANUAL CONFIGURATION
+         */
+        const APPS_CONFIG = [
+            {
+                id: '1',
+                title: 'Fable Checklists',
+                description: 'Checklists for silver keys and chests in Fable.',
+                path: 'apps/fable-checklists/index.html',
+                category: 'Fun',
+                icon: '📊',
+                color: 'from-blue-500 to-cyan-500'
+            }
+        ];
+
+        const state = {
+            search: '',
+            filter: 'all',
+            favorites: []
+        };
+
+        try {
+            state.favorites = JSON.parse(localStorage.getItem('portal_favorites') || '[]');
+        } catch(e) {
+            localStorage.removeItem('portal_favorites');
+        }
+
+        const appGrid = document.getElementById('appGrid');
+        const searchInput = document.getElementById('searchInput');
+        const filterContainer = document.getElementById('filterContainer');
+        const emptyState = document.getElementById('emptyState');
+        const appViewer = document.getElementById('appViewer');
+        const appFrame = document.getElementById('appFrame');
+        const viewerTitle = document.getElementById('viewerTitle');
+        const openExternalBtn = document.getElementById('openExternalBtn');
+
+        function init() {
+            renderFilters();
+            renderApps();
+            
+            searchInput.addEventListener('input', (e) => {
+                state.search = e.target.value.toLowerCase();
+                renderApps();
+            });
+
+            // Handle browser Back/Forward buttons
+            window.addEventListener('popstate', (event) => {
+                if (event.state && event.state.appId) {
+                    // History says an app is open, so ensure viewer is shown
+                    showViewer(event.state.appId, false);
+                } else {
+                    // History says we are at root, so hide viewer
+                    hideViewer();
+                }
+            });
+
+            // Check if loaded with a hash (e.g., #app-1)
+            const initialHash = window.location.hash;
+            if (initialHash) {
+                const appId = initialHash.replace('#', '');
+                // Verify this app exists before trying to open
+                if (APPS_CONFIG.find(a => a.id === appId)) {
+                    openApp(appId);
+                }
+            }
+        }
+
+        /* --- VIEWER LOGIC --- */
+
+        function openApp(appId) {
+            // Push state so Back button works
+            history.pushState({ appId: appId }, '', `#${appId}`);
+            showViewer(appId, true);
+        }
+
+        function closeApp() {
+            // Force close the viewer immediately
+            hideViewer();
+            
+            // Clean up the URL (remove hash) and push a new history entry.
+            // This prevents the button from getting "stuck" if the iframe 
+            // added its own history entries (which traps standard history.back()).
+            history.pushState(null, '', window.location.href.split('#')[0]);
+        }
+
+        function showViewer(appId, animate = true) {
+            const app = APPS_CONFIG.find(a => a.id === appId);
+            if (!app) return;
+
+            viewerTitle.innerText = app.title;
+            appFrame.src = app.path;
+            openExternalBtn.href = app.path;
+
+            appViewer.classList.remove('viewer-closed');
+            appViewer.classList.add('viewer-open');
+            
+            // Lock body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideViewer() {
+            appViewer.classList.remove('viewer-open');
+            appViewer.classList.add('viewer-closed');
+            
+            // Clear iframe src after transition to stop media/execution
+            setTimeout(() => {
+                if (appViewer.classList.contains('viewer-closed')) {
+                    appFrame.src = '';
+                }
+            }, 300);
+
+            // Unlock body scroll
+            document.body.style.overflow = '';
+        }
+
+        /* --- RENDER LOGIC --- */
+
+        function renderFilters() {
+            const categories = ['all', ...new Set(APPS_CONFIG.map(app => app.category))];
+            
+            filterContainer.innerHTML = categories.map(cat => `
+                <button 
+                    data-filter="${cat}" 
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium transition-all ${state.filter === cat ? 'bg-blue-500/20 border-blue-500 text-blue-400' : 'glass text-slate-400 hover:text-white border-transparent'}"
+                >
+                    ${cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </button>
+            `).join('');
+
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.filter = btn.getAttribute('data-filter');
+                    renderFilters();
+                    renderApps();
+                });
+            });
+        }
+
+        function toggleFavorite(id, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const index = state.favorites.indexOf(id);
+            if (index > -1) {
+                state.favorites.splice(index, 1);
+            } else {
+                state.favorites.push(id);
+            }
+            localStorage.setItem('portal_favorites', JSON.stringify(state.favorites));
+            renderApps();
+        }
+
+        function renderApps() {
+            const filteredApps = APPS_CONFIG.filter(app => {
+                const matchesSearch = app.title.toLowerCase().includes(state.search) || 
+                                    app.description.toLowerCase().includes(state.search);
+                const matchesFilter = state.filter === 'all' || app.category === state.filter;
+                return matchesSearch && matchesFilter;
+            });
+
+            filteredApps.sort((a, b) => {
+                const aFav = state.favorites.includes(a.id);
+                const bFav = state.favorites.includes(b.id);
+                return bFav - aFav;
+            });
+
+            if (filteredApps.length === 0) {
+                appGrid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            // Changed <a> to <div> with onclick="openApp"
+            appGrid.innerHTML = filteredApps.map(app => {
+                const isFav = state.favorites.includes(app.id);
+                return `
+                <div onclick="openApp('${app.id}')" class="app-card block glass rounded-2xl p-6 transition-all group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 z-10">
+                        <button onclick="toggleFavorite('${app.id}', event)" class="text-2xl transition-transform active:scale-125 ${isFav ? 'opacity-100' : 'opacity-20 group-hover:opacity-100'}">
+                            ${isFav ? '⭐' : '☆'}
+                        </button>
+                    </div>
+                    
+                    <div class="w-14 h-14 rounded-xl mb-6 flex items-center justify-center text-3xl shadow-lg bg-gradient-to-br ${app.color}">
+                        ${app.icon}
+                    </div>
+
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${app.title}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4">${app.description}</p>
+                    
+                    <div class="flex items-center justify-between mt-auto">
+                        <span class="text-[10px] uppercase tracking-widest font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded">
+                            ${app.category}
+                        </span>
+                        <span class="text-blue-500 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0">
+                            Open →
+                        </span>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        window.onload = init;
+        window.toggleFavorite = toggleFavorite;
+        window.openApp = openApp;
+        window.closeApp = closeApp;
+    </script>
+</body>
+</html>

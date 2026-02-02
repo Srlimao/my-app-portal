@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fable Anniversary Collector's Guide</title>
+    <style>
+        :root {
+            --primary: #4a3b2a;
+            --secondary: #d4c5a9;
+            --accent: #8b0000;
+            --success: #e8f5e9;
+            --success-text: #2e7d32;
+            --text: #2c2c2c;
+            --bg: #f4f1ea;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Stats Counter */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            flex: 1;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-card.chests {
+            border-left-color: var(--accent);
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-card.chests .stat-value {
+            color: var(--accent);
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: var(--primary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .tab-button {
+            background-color: var(--primary);
+            color: var(--secondary);
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: 0.3s;
+            flex: 1;
+        }
+
+        .tab-button:hover {
+            background-color: #5e4b35;
+        }
+
+        .tab-button.active {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        tr {
+            transition: background-color 0.2s;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Completed Row Style */
+        tr.completed {
+            background-color: var(--success) !important;
+            color: var(--success-text);
+            text-decoration: line-through;
+            opacity: 0.8;
+        }
+        
+        tr.completed .cost-col, 
+        tr.completed .region-col {
+            color: var(--success-text); /* Override column colors when done */
+        }
+
+        /* Specific Styles */
+        .check-col {
+            width: 50px;
+            text-align: center;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.5);
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .cost-col {
+            font-weight: bold;
+            color: var(--accent);
+            text-align: center;
+            width: 80px;
+        }
+
+        .region-col {
+            font-weight: bold;
+            color: var(--primary);
+            width: 200px;
+        }
+        
+        .reset-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #666;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .reset-btn:hover {
+            background-color: #444;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            th, td {
+                font-size: 14px;
+                padding: 10px;
+            }
+            .region-col {
+                width: auto;
+            }
+            .stats-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Fable Anniversary Tracker</h1>
+
+    <!-- Stats Counter Section -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <span class="stat-label">Silver Keys Found</span>
+            <span class="stat-value" id="key-count">0 / 30</span>
+        </div>
+        <div class="stat-card chests">
+            <span class="stat-label">Chests Opened</span>
+            <span class="stat-value" id="chest-count">0 / 12</span>
+        </div>
+    </div>
+
+    <div class="tab-nav">
+        <button class="tab-button active" onclick="openTab(event, 'Keys')">Silver Keys</button>
+        <button class="tab-button" onclick="openTab(event, 'Chests')">Chests & Rewards</button>
+    </div>
+
+    <!-- Silver Keys Tab -->
+    <div id="Keys" class="tab-content active">
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-col">Done</th>
+                    <th>Region</th>
+                    <th>Specific Location / Requirement</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- IDs are k1, k2, etc. -->
+                <tr><td class="check-col"><input type="checkbox" data-id="k1"></td><td class="region-col">Lookout Point</td><td>Cut through thorns/vines near the statue.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k2"></td><td class="region-col">Bowerstone South</td><td>On the balcony of the tailor's shop.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k3"></td><td class="region-col">Guild Woods</td><td>Fish in the pond (ripple).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k4"></td><td class="region-col">Greatwood Lake</td><td>Top of the hill path on the northern side.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k5"></td><td class="region-col">Fisher Creek</td><td>Fish on the north side of the house.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k6"></td><td class="region-col">Fisher Creek</td><td>Win the Fishing Competition (2nd Prize).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k7"></td><td class="region-col">Orchard Farm</td><td>Fish off the end of the pier.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k8"></td><td class="region-col">Rose Cottage</td><td>Dig in the circle of red flowers.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k9"></td><td class="region-col">Hobbe Cave</td><td>Focus Chamber: Dig in the mushroom ring.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k10"></td><td class="region-col">Darkwood Lake</td><td>Shoot an arrow into the hole at the top of the mysterious stone.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k11"></td><td class="region-col">Ancient Cullis Gate</td><td>Fish off the bridge on the west side.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k12"></td><td class="region-col">Oakvale</td><td>Memorial Garden: Dig at base of statue (Needs Ghost Pirate quest).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k13"></td><td class="region-col">Oakvale</td><td>Chicken Kicking Competition (2nd Prize).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k14"></td><td class="region-col">Twinblade's Camp</td><td>Dig in the circle of flowers (near chest/barrels).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k15"></td><td class="region-col">Witchwood Stones</td><td>Fish in the pond opposite the Demon Door.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k16"></td><td class="region-col">Witchwood Lake</td><td>Dig at the base of the red glowing gargoyle statue.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k17"></td><td class="region-col">Knothole Glade</td><td>Dig in the foliage circle between two houses in the south.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k18"></td><td class="region-col">Grey House</td><td>Fish in the pond near the Demon Door.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k19"></td><td class="region-col">Windmill Hill</td><td>Dig in flower ring in the garden behind the windmill.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k20"></td><td class="region-col">Windmill Hill</td><td>Dig in flower ring behind the western house.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k21"></td><td class="region-col">Headsman's Hill</td><td>Fish in the pond (only during "Mayor's Invitation" quest).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k22"></td><td class="region-col">Bowerstone Manor</td><td>Search Lady Grey's bed (requires marriage or becoming Mayor).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k23"></td><td class="region-col">Lychfield Graveyard</td><td>Fish in the pond near the Gravekeeper's house.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k24"></td><td class="region-col">Lychfield Graveyard</td><td>Dig in the grave of "Katie Stutter".</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k25"></td><td class="region-col">Lychfield Graveyard</td><td>Inside the crypt, loot the sarcophagus.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k26"></td><td class="region-col">Cliffside Path</td><td>Dig in the mushroom ring on the northern hill.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k27"></td><td class="region-col">Hook Coast</td><td>Search the cabinet inside the lighthouse (ground floor).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k28"></td><td class="region-col">The Lost Bay</td><td>Dig in the grave near the abandoned building.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k29"></td><td class="region-col">Bowerstone South</td><td>Donate 25 books to the school teacher (Book Collection).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="k30"></td><td class="region-col">Necropolis</td><td>Fish in the river near the Demon Door.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Chests Tab -->
+    <div id="Chests" class="tab-content">
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-col">Done</th>
+                    <th class="cost-col">Cost</th>
+                    <th>Region</th>
+                    <th>Location Details</th>
+                    <th>Reward</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- IDs are c1, c2, etc. -->
+                <tr><td class="check-col"><input type="checkbox" data-id="c1"></td><td class="cost-col">5</td><td class="region-col">Greatwood Lake</td><td>On the small island hill.</td><td>Elixir of Life</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c2"></td><td class="cost-col">5</td><td class="region-col">Hobbe Cave</td><td>Inside the Cave Larder room.</td><td>Will Master's Elixir</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c3"></td><td class="cost-col">10</td><td class="region-col">Grey House</td><td>Upstairs in the house.</td><td>Sharpening Augmentation</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c4"></td><td class="cost-col">10</td><td class="region-col">Circle of the Dead</td><td>Behind the Demon Door in Lychfield Graveyard.</td><td>Piercing Augmentation</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c5"></td><td class="cost-col">15</td><td class="region-col">Darkwood Lake</td><td>Follow the path south.</td><td>Arken's Crossbow</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c6"></td><td class="cost-col">15</td><td class="region-col">Witchwood Stones</td><td>Inside the Demon Door.</td><td>Health Augmentation</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c7"></td><td class="cost-col">15</td><td class="region-col">Headsman's Hill</td><td>Inside the cave (access during Thunder fight).</td><td>Mana Augmentation</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c8"></td><td class="cost-col">15</td><td class="region-col">Bowerstone Manor</td><td>In the bedroom (requires marriage/Mayor).</td><td>Katana Hiryu</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c9"></td><td class="cost-col">15</td><td class="region-col">Hook Coast</td><td>At the very top of the lighthouse.</td><td>The Murren Greataxe</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c10"></td><td class="cost-col">20</td><td class="region-col">Heroes' Guild</td><td>In the garden near the Demon Door.</td><td>The Murren Greathammer</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c11"></td><td class="cost-col">25</td><td class="region-col">Necropolis</td><td>Near the river.</td><td>Archon's Battle Armour</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c12"></td><td class="cost-col">30</td><td class="region-col">The Lost Bay</td><td>Near the shore.</td><td>The Avenger</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <button class="reset-btn" onclick="resetProgress()">Reset All Progress</button>
+
+    <script>
+        // --- Tab Logic ---
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // --- Storage & Checkbox Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            
+            // 1. Load saved state
+            checkboxes.forEach(cb => {
+                const id = cb.getAttribute('data-id');
+                const isChecked = localStorage.getItem('fable_tracker_' + id) === 'true';
+                
+                cb.checked = isChecked;
+                toggleRowStyle(cb, isChecked);
+
+                // 2. Add change listeners
+                cb.addEventListener('change', (e) => {
+                    const checked = e.target.checked;
+                    localStorage.setItem('fable_tracker_' + id, checked);
+                    toggleRowStyle(e.target, checked);
+                    updateCounters(); // Update stats immediately
+                });
+            });
+
+            // 3. Initial count
+            updateCounters();
+        });
+
+        // Helper to dim the row when checked
+        function toggleRowStyle(checkbox, isChecked) {
+            const row = checkbox.closest('tr');
+            if (isChecked) {
+                row.classList.add('completed');
+            } else {
+                row.classList.remove('completed');
+            }
+        }
+
+        // --- Counter Logic ---
+        function updateCounters() {
+            // Count checked keys (data-id starts with 'k')
+            const keysFound = document.querySelectorAll('input[type="checkbox"][data-id^="k"]:checked').length;
+            document.getElementById('key-count').innerText = keysFound + " / 30";
+
+            // Count checked chests (data-id starts with 'c')
+            const chestsOpened = document.querySelectorAll('input[type="checkbox"][data-id^="c"]:checked').length;
+            document.getElementById('chest-count').innerText = chestsOpened + " / 12";
+        }
+
+        // Reset function
+        function resetProgress() {
+            if(confirm("Are you sure you want to uncheck everything?")) {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    const id = cb.getAttribute('data-id');
+                    localStorage.removeItem('fable_tracker_' + id);
+                    toggleRowStyle(cb, false);
+                });
+                updateCounters(); // Reset stats to 0
+            }
+        }
+    </script>
+
+</body>
+</html>
