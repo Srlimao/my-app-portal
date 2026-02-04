@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fable 3 Collector's Guide</title>
+    <style>
+        :root {
+            /* Fable 3 Theme: More industrial/revolutionary colors */
+            --primary: #2d3436;
+            --secondary: #636e72;
+            --accent: #d63031; /* Revolution Red */
+            --gold: #fdcb6e;   /* For Gold Keys */
+            --purple: #6c5ce7; /* For Achievements */
+            --success: #e8f5e9;
+            --success-text: #2e7d32;
+            --text: #2d3436;
+            --bg: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Stats Counter */
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            border-top: 4px solid var(--primary);
+        }
+
+        .stat-card.gold { border-top-color: var(--gold); }
+        .stat-card.chests { border-top-color: var(--accent); }
+        .stat-card.achieve { border-top-color: var(--purple); }
+
+        .stat-label {
+            display: block;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            background: var(--primary);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            background-color: var(--primary);
+            color: #b2bec3;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.2s;
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .tab-button:hover { background-color: #454d50; color: white; }
+        .tab-button.active { background-color: var(--accent); color: white; }
+
+        /* Tab Content */
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        tr { transition: background-color 0.2s; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #f1f2f6; }
+
+        /* Completed Row Style */
+        tr.completed {
+            background-color: var(--success) !important;
+            color: var(--success-text);
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        
+        tr.completed .cost-col, 
+        tr.completed .region-col,
+        tr.completed .achieve-col { color: var(--success-text); }
+
+        /* Columns */
+        .check-col { width: 40px; text-align: center; }
+        .cost-col { font-weight: bold; color: var(--accent); text-align: center; width: 60px; }
+        .region-col { font-weight: bold; color: var(--primary); width: 180px; }
+        .achieve-col { font-weight: bold; color: var(--purple); width: 220px; }
+        
+        input[type="checkbox"] { transform: scale(1.4); cursor: pointer; accent-color: var(--accent); }
+
+        /* Gold Key Special Styling */
+        .gold-row td { background-color: #fffbf0; border-bottom: 1px solid #ffeaa7; }
+        .gold-row .region-col { color: #d35400; }
+
+        /* Notes Section */
+        .notes-wrapper {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .note-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        #new-note-text {
+            flex: 1; padding: 12px; border: 2px solid #dfe6e9;
+            border-radius: 4px; font-family: inherit; resize: vertical; min-height: 45px;
+        }
+        #new-note-text:focus { border-color: var(--primary); outline: none; }
+        
+        .btn-add { background-color: var(--primary); color: white; border: none; padding: 0 25px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background-color: var(--accent); }
+
+        .note-card {
+            background: #fdfcf8;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .note-content { white-space: pre-wrap; margin: 0 0 10px 0; }
+        
+        .note-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .btn-sm { padding: 6px 12px; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .btn-edit { background: #dfe6e9; color: #2d3436; }
+        .btn-delete { background: #fab1a0; color: #c0392b; }
+        .btn-save { background: var(--success); color: var(--success-text); }
+        .note-content-edit { width: 100%; padding: 10px; border: 1px solid #ccc; font-family: inherit; margin-bottom: 10px; box-sizing: border-box; }
+
+        .reset-btn {
+            display: block; margin: 30px auto; padding: 12px 24px;
+            background-color: #636e72; color: white; border: none;
+            border-radius: 4px; cursor: pointer; font-size: 14px;
+        }
+        .reset-btn:hover { background-color: #2d3436; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .stats-container { flex-direction: column; }
+            .region-col, .achieve-col { width: auto; }
+            th, td { font-size: 13px; padding: 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Fable 3 Tracker</h1>
+
+    <!-- Stats -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <span class="stat-label">Silver Keys</span>
+            <span class="stat-value" id="silver-count">0 / 50</span>
+        </div>
+        <div class="stat-card gold">
+            <span class="stat-label">Gold Keys</span>
+            <span class="stat-value" id="gold-count">0 / 4</span>
+        </div>
+        <div class="stat-card chests">
+            <span class="stat-label">Chests/Doors</span>
+            <span class="stat-value" id="chest-count">0 / 17</span>
+        </div>
+        <div class="stat-card achieve">
+            <span class="stat-label">Achievements</span>
+            <span class="stat-value" id="achieve-count">0 / 8</span>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="tab-nav">
+        <button class="tab-button active" onclick="openTab(event, 'SilverKeys')">Silver Keys (50)</button>
+        <button class="tab-button" onclick="openTab(event, 'GoldKeys')">Gold Keys (4)</button>
+        <button class="tab-button" onclick="openTab(event, 'Chests')">Chests & Rewards</button>
+        <button class="tab-button" onclick="openTab(event, 'Achievements')">Missable Achievements</button>
+        <button class="tab-button" onclick="openTab(event, 'Notes')">My Notes</button>
+    </div>
+
+    <!-- Silver Keys Tab -->
+    <div id="SilverKeys" class="tab-content active">
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-col">Done</th>
+                    <th>Region</th>
+                    <th>Location Hint</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Brightwall (5) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk1"></td><td class="region-col">Brightwall</td><td>Behind the house near the bridge entrance.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk2"></td><td class="region-col">Brightwall</td><td>By the small house near the library entrance.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk3"></td><td class="region-col">Brightwall</td><td>Behind the large rocks near the Mourningwood gate.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk4"></td><td class="region-col">Brightwall (Reliquary)</td><td>In a small hidden room on the right after the platform puzzle.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk5"></td><td class="region-col">Brightwall (Reliquary)</td><td>Near the skeleton after diving into the water area.</td></tr>
+
+                <!-- Dweller Camp (1) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk6"></td><td class="region-col">Dweller Camp</td><td>Behind Sabine's caravan (at the top).</td></tr>
+
+                <!-- Mistpeak Valley (6) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk7"></td><td class="region-col">Mistpeak Valley</td><td>In the pile of logs near the Monorail Station.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk8"></td><td class="region-col">Mistpeak Valley</td><td>Up the snowy path near the Demon Door.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk9"></td><td class="region-col">Mistpeak Valley (Cave)</td><td>Chillbreath Caverns: Near the frozen waterfall.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk10"></td><td class="region-col">Mistpeak Valley (Cave)</td><td>Chillbreath Caverns: Take the path from the Monorail station entrance.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk11"></td><td class="region-col">Mistpeak Valley</td><td>Behind the mercenary camp entrance.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk12"></td><td class="region-col">Mistpeak Valley (Hole)</td><td>The Hole: Near the technopyle/monorail crash site.</td></tr>
+
+                <!-- Mercenary Camp (1) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk13"></td><td class="region-col">Mercenary Camp</td><td>Under the water tower near the fighting ring.</td></tr>
+
+                <!-- Mourningwood (4) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk14"></td><td class="region-col">Mourningwood</td><td>Buried near the Ossuary entrance (dig spot).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk15"></td><td class="region-col">Mourningwood</td><td>Inside the ruined archway near the fort.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk16"></td><td class="region-col">Mourningwood (Ossuary)</td><td>On the balcony overlooking the main area.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk17"></td><td class="region-col">Mourningwood (Ossuary)</td><td>In a crypt to the left as you enter.</td></tr>
+
+                <!-- Bowerstone Industrial (4) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk18"></td><td class="region-col">Bowerstone Industrial</td><td>Inside the factory with the steam vents (upstairs).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk19"></td><td class="region-col">Bowerstone Industrial</td><td>Near the docks, behind a pile of crates.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk20"></td><td class="region-col">Bowerstone Industrial (Cesspools)</td><td>Behind a boarded-up wall (requires melee).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk21"></td><td class="region-col">Bowerstone Industrial (Sewers)</td><td>Tucked in a corner near the exit.</td></tr>
+
+                <!-- Bowerstone Market (3) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk22"></td><td class="region-col">Bowerstone Market</td><td>Behind the fish stalls near the bridge.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk23"></td><td class="region-col">Bowerstone Market</td><td>In the garden of the Hauteville Heights house.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk24"></td><td class="region-col">Bowerstone Market (Hideout)</td><td>In the basement of the dollhouse shop (Hideout entrance).</td></tr>
+
+                <!-- Bowerstone Old Quarter (2) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk25"></td><td class="region-col">Bowerstone Old Quarter</td><td>Near the shoreline/beach area under the wall.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk26"></td><td class="region-col">Bowerstone Old Quarter</td><td>In the garden of the Nightshade House.</td></tr>
+
+                <!-- Sunset House (2) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk27"></td><td class="region-col">Sunset House</td><td>Near the Demon Door, behind a tree.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk28"></td><td class="region-col">Sunset House</td><td>Inside the house, use the mirror to see it, walk through the wall.</td></tr>
+
+                <!-- Millfields (7) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk29"></td><td class="region-col">Millfields</td><td>Inside Dankwater Cavern (near the Hobbe camp).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk30"></td><td class="region-col">Millfields</td><td>Inside Dankwater Cavern (upper level, needs water raised).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk31"></td><td class="region-col">Millfields</td><td>Behind the Pepperpot Cave entrance.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk32"></td><td class="region-col">Millfields</td><td>Near the Reaver's Manor gate (left side).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk33"></td><td class="region-col">Millfields</td><td>On the path towards Driftwood.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk34"></td><td class="region-col">Millfields</td><td>Near the pond by the cemetery.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk35"></td><td class="region-col">Millfields (Reaver's Manor)</td><td>In the bedroom behind the bookshelf (story specific).</td></tr>
+
+                <!-- Silverpines (2) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk36"></td><td class="region-col">Silverpines</td><td>At the end of the path near the mine entrance.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk37"></td><td class="region-col">Silverpines</td><td>Inside the Silverpines Mine (during quest).</td></tr>
+
+                <!-- Driftwood (2) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk38"></td><td class="region-col">Driftwood</td><td>Inside a small cave on the main island.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk39"></td><td class="region-col">Driftwood</td><td>On the far island (swim to reach).</td></tr>
+
+                <!-- City of Aurora (2) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk40"></td><td class="region-col">City of Aurora</td><td>Near the shrine, jump across rooftops.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk41"></td><td class="region-col">City of Aurora</td><td>Path towards Shifting Sands, behind rocks.</td></tr>
+
+                <!-- Shifting Sands (5) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk42"></td><td class="region-col">Shifting Sands</td><td>Near the entrance from Aurora.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk43"></td><td class="region-col">Shifting Sands</td><td>Under the stone archway in the dunes.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk44"></td><td class="region-col">Shifting Sands</td><td>Sandfall Palace: Near the diamond puzzle.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk45"></td><td class="region-col">Shifting Sands</td><td>Sandfall Palace: Behind a pillar in the second room.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk46"></td><td class="region-col">Shifting Sands</td><td>In the cave requiring the key from Aurora quest.</td></tr>
+
+                <!-- The Veiled Path (2) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk47"></td><td class="region-col">The Veiled Path</td><td>At the far end near the entrance to the Enigma.</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk48"></td><td class="region-col">The Veiled Path (Enigma)</td><td>Inside the Enigma, shooting puzzle room.</td></tr>
+
+                <!-- Path to Rule (Legacy/Special) -->
+                <tr><td class="check-col"><input type="checkbox" data-id="sk49"></td><td class="region-col">Bowerstone Castle</td><td>In the garden (catacombs entrance area).</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="sk50"></td><td class="region-col">Catacombs</td><td>Under the bridge in the first large room.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Gold Keys Tab -->
+    <div id="GoldKeys" class="tab-content">
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-col">Done</th>
+                    <th>Region</th>
+                    <th>Detailed Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gk1"></td><td class="region-col">Mistpeak Valley</td><td><strong>Chillbreath Caverns:</strong> Enter from the brown unmarked entrance. Run to the exit leading to the ledge. Key is on the ledge.</td></tr>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gk2"></td><td class="region-col">Driftwood</td><td>Complete "Pest Control" & "Gift Wood". Reach the flit switch puzzle on the new island to unlock the teleporter.</td></tr>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gk3"></td><td class="region-col">Shifting Sands</td><td>Buy Key to Locked Door in Aurora. Open door in Shifting Sands. Follow path to "The Crossroads". Key is floating above void.</td></tr>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gk4"></td><td class="region-col">The Veiled Path</td><td><strong>The Enigma:</strong> Solve the torch puzzle (light torches in order to open colored doors). Key is in final room.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Chests Tab -->
+    <div id="Chests" class="tab-content">
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-col">Done</th>
+                    <th class="cost-col">Cost</th>
+                    <th>Region</th>
+                    <th>Reward</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Silver Key Chests -->
+                <tr><td class="check-col"><input type="checkbox" data-id="c1"></td><td class="cost-col">1</td><td class="region-col">Mistpeak Valley</td><td>50 Gold</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c2"></td><td class="cost-col">5</td><td class="region-col">Brightwall Village</td><td>Gem / Potion</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c3"></td><td class="cost-col">5</td><td class="region-col">Mourningwood</td><td>Elixir / Potion</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c4"></td><td class="cost-col">10</td><td class="region-col">Brightwall Village</td><td>Common Weapon</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c5"></td><td class="cost-col">10</td><td class="region-col">Bowerstone Industrial</td><td>50,000 Gold</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c6"></td><td class="cost-col">10</td><td class="region-col">City of Aurora</td><td>Gem / Potion</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c7"></td><td class="cost-col">10</td><td class="region-col">Shifting Sands</td><td>50,000 Gold</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c8"></td><td class="cost-col">15</td><td class="region-col">Bowerstone Market</td><td>Guild Seal (20)</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c9"></td><td class="cost-col">15</td><td class="region-col">Millfields</td><td>Guild Seal (20)</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c10"></td><td class="cost-col">20</td><td class="region-col">Millfields (Dankwater)</td><td>Rare Weapon</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c11"></td><td class="cost-col">20</td><td class="region-col">City of Aurora</td><td>Legendary Weapon</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c12"></td><td class="cost-col">20</td><td class="region-col">Mourningwood</td><td>Legendary Weapon</td></tr>
+                <tr><td class="check-col"><input type="checkbox" data-id="c13"></td><td class="cost-col">50</td><td class="region-col">Bowerstone Castle (Garden)</td><td>2M Gold + Legendary Weapon</td></tr>
+
+                <!-- Gold Key Doors -->
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gc1"></td><td class="cost-col">Gold</td><td class="region-col">Catacombs</td><td>Legendary Weapon</td></tr>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gc2"></td><td class="cost-col">Gold</td><td class="region-col">Sunset House</td><td>Legendary Weapon</td></tr>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gc3"></td><td class="cost-col">Gold</td><td class="region-col">Mourningwood (Ossuary)</td><td>Legendary Weapon</td></tr>
+                <tr class="gold-row"><td class="check-col"><input type="checkbox" data-id="gc4"></td><td class="cost-col">Gold</td><td class="region-col">Brightwall (Reliquary)</td><td>Legendary Weapon</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Achievements Tab -->
+    <div id="Achievements" class="tab-content">
+        <table>
+            <thead>
+                <tr>
+                    <th class="check-col">Done</th>
+                    <th class="achieve-col">Achievement</th>
+                    <th>Requirement / Missable Warning</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma1"></td>
+                    <td class="achieve-col">Tough Love</td>
+                    <td><strong>HIGHLY MISSABLE:</strong> Save the maximum amount of citizens (6,500,000). You MUST have 6.5M Gold in the treasury <em>before</em> the schedule hits 'Day 1' of the final battle.</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma2"></td>
+                    <td class="achieve-col">You Can't Bring Me Down</td>
+                    <td><strong>MISSABLE:</strong> Complete the main story without being knocked out. Keep health potions stocked and use Slow Time if overwhelmed.</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma3"></td>
+                    <td class="achieve-col">Fashion Victim</td>
+                    <td>Collect every item of clothing. <strong>Note:</strong> Requires trading online with a hero of the opposite gender to get their specific suit.</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma4"></td>
+                    <td class="achieve-col">Coronation Chicken</td>
+                    <td>Perform a royal judgement while dressed as a chicken. Requires the Chicken Suit (Quest: <em>The Chicken Theatre</em>).</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma5"></td>
+                    <td class="achieve-col">He's a Woman, She's a Man</td>
+                    <td>Wear a full set of clothing intended for the opposite sex. Easily done in Bowerstone Market.</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma6"></td>
+                    <td class="achieve-col">Gnome Invasion</td>
+                    <td>Destroy all 50 Gnomes. (Quest: <em>Gnomes are Great</em>). Not strictly missable, but tedious.</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma7"></td>
+                    <td class="achieve-col">Brightwall Book Club</td>
+                    <td>Collect all 30 Rare Books for the Academy.</td>
+                </tr>
+                <tr>
+                    <td class="check-col"><input type="checkbox" data-id="ma8"></td>
+                    <td class="achieve-col">Henry VIII</td>
+                    <td>As ruler of Albion, get married 6 times and kill 2 of your spouses.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Notes Tab -->
+    <div id="Notes" class="tab-content">
+        <div class="notes-wrapper">
+            <div class="note-input-group">
+                <textarea id="new-note-text" placeholder="Type a note here (e.g., 'Need 6.5 million gold before Day 1')..."></textarea>
+                <button class="btn-add" onclick="addNote()">Add Note</button>
+            </div>
+            <div id="notes-list" class="note-list"></div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetProgress()">Reset Checkboxes (Keep Notes)</button>
+
+    <script>
+        // --- Tabs ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) tabcontent[i].classList.remove("active");
+            
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // --- Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            
+            checkboxes.forEach(cb => {
+                const id = cb.getAttribute('data-id');
+                const isChecked = localStorage.getItem('fable3_tracker_' + id) === 'true'; 
+                cb.checked = isChecked;
+                toggleRowStyle(cb, isChecked);
+
+                cb.addEventListener('change', (e) => {
+                    const checked = e.target.checked;
+                    localStorage.setItem('fable3_tracker_' + id, checked);
+                    toggleRowStyle(e.target, checked);
+                    updateCounters();
+                });
+            });
+
+            updateCounters();
+            loadNotes();
+        });
+
+        function toggleRowStyle(checkbox, isChecked) {
+            const row = checkbox.closest('tr');
+            isChecked ? row.classList.add('completed') : row.classList.remove('completed');
+        }
+
+        function updateCounters() {
+            // Silver Keys (sk)
+            const silver = document.querySelectorAll('input[type="checkbox"][data-id^="sk"]:checked').length;
+            document.getElementById('silver-count').innerText = silver + " / 50";
+
+            // Gold Keys (gk)
+            const gold = document.querySelectorAll('input[type="checkbox"][data-id^="gk"]:checked').length;
+            document.getElementById('gold-count').innerText = gold + " / 4";
+
+            // Chests (c + gc)
+            const chests = document.querySelectorAll('input[type="checkbox"][data-id^="c"]:checked').length;
+            const goldChests = document.querySelectorAll('input[type="checkbox"][data-id^="gc"]:checked').length;
+            document.getElementById('chest-count').innerText = (chests + goldChests) + " / 17";
+
+            // Achievements (ma)
+            const ach = document.querySelectorAll('input[type="checkbox"][data-id^="ma"]:checked').length;
+            document.getElementById('achieve-count').innerText = ach + " / 8";
+        }
+
+        function resetProgress() {
+            if(confirm("Uncheck all items (Keys, Chests, Achievements)?")) {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => {
+                    cb.checked = false;
+                    const id = cb.getAttribute('data-id');
+                    localStorage.removeItem('fable3_tracker_' + id);
+                    toggleRowStyle(cb, false);
+                });
+                updateCounters();
+            }
+        }
+
+        // --- Notes (Shared Logic) ---
+        let notes = [];
+        const NOTES_KEY = 'fable3_notes_data'; 
+
+        function loadNotes() {
+            const saved = localStorage.getItem(NOTES_KEY);
+            if (saved) notes = JSON.parse(saved);
+            renderNotes();
+        }
+
+        function saveNotes() {
+            localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function addNote() {
+            const text = document.getElementById('new-note-text').value.trim();
+            if (!text) return;
+            notes.push({ id: Date.now(), text: text });
+            document.getElementById('new-note-text').value = '';
+            saveNotes();
+        }
+
+        function deleteNote(id) {
+            if(confirm("Delete this note?")) {
+                notes = notes.filter(n => n.id !== id);
+                saveNotes();
+            }
+        }
+
+        function editNote(id) {
+            const noteDiv = document.getElementById(`note-${id}`);
+            const noteObj = notes.find(n => n.id === id);
+            if (!noteDiv || !noteObj) return;
+
+            noteDiv.innerHTML = `
+                <textarea id="edit-text-${id}" class="note-content-edit">${noteObj.text}</textarea>
+                <div class="note-actions">
+                    <button class="btn-sm btn-save" onclick="saveEdit(${id})">Save</button>
+                    <button class="btn-sm btn-edit" onclick="renderNotes()">Cancel</button>
+                </div>
+            `;
+        }
+
+        function saveEdit(id) {
+            const newText = document.getElementById(`edit-text-${id}`).value.trim();
+            if (newText) {
+                const noteIndex = notes.findIndex(n => n.id === id);
+                if (noteIndex > -1) { notes[noteIndex].text = newText; saveNotes(); }
+            } else { deleteNote(id); }
+        }
+
+        function renderNotes() {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+            if (notes.length === 0) { list.innerHTML = '<div style="text-align:center;color:#999;">No notes yet.</div>'; return; }
+            
+            [...notes].reverse().forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'note-card';
+                div.id = `note-${note.id}`;
+                const safeText = note.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                div.innerHTML = `
+                    <p class="note-content">${safeText}</p>
+                    <div class="note-actions">
+                        <button class="btn-sm btn-edit" onclick="editNote(${note.id})">Edit</button>
+                        <button class="btn-sm btn-delete" onclick="deleteNote(${note.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>

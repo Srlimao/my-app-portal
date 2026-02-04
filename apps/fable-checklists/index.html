@@ -163,7 +163,7 @@
         
         tr.completed .cost-col, 
         tr.completed .region-col {
-            color: var(--success-text); /* Override column colors when done */
+            color: var(--success-text);
         }
 
         /* Specific Styles */
@@ -206,6 +206,107 @@
             background-color: #444;
         }
 
+        /* --- Notes Styling --- */
+        .notes-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .note-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #new-note-text {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 40px;
+        }
+
+        .btn-add {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-add:hover { background-color: #5e4b35; }
+
+        .note-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .note-card {
+            background: #fdfcf8;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .note-content {
+            margin: 0 0 10px 0;
+            white-space: pre-wrap; /* Preserves newlines */
+            line-height: 1.5;
+        }
+
+        .note-content-edit {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+            display: block;
+            box-sizing: border-box;
+            min-height: 60px;
+            resize: vertical;
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .btn-edit { background-color: #e0e0e0; color: #333; }
+        .btn-edit:hover { background-color: #d0d0d0; }
+
+        .btn-save { background-color: var(--success-text); color: white; }
+        .btn-save:hover { background-color: #256628; }
+
+        .btn-delete { background-color: #ffcdd2; color: #b71c1c; }
+        .btn-delete:hover { background-color: #ef9a9a; }
+
+        .empty-notes {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -222,6 +323,12 @@
             }
             .stats-container {
                 flex-direction: column;
+            }
+            .note-input-group {
+                flex-direction: column;
+            }
+            .btn-add {
+                padding: 10px;
             }
         }
     </style>
@@ -245,6 +352,7 @@
     <div class="tab-nav">
         <button class="tab-button active" onclick="openTab(event, 'Keys')">Silver Keys</button>
         <button class="tab-button" onclick="openTab(event, 'Chests')">Chests & Rewards</button>
+        <button class="tab-button" onclick="openTab(event, 'Notes')">My Notes</button>
     </div>
 
     <!-- Silver Keys Tab -->
@@ -323,7 +431,21 @@
         </table>
     </div>
 
-    <button class="reset-btn" onclick="resetProgress()">Reset All Progress</button>
+    <!-- Notes Tab -->
+    <div id="Notes" class="tab-content">
+        <div class="notes-wrapper">
+            <div class="note-input-group">
+                <textarea id="new-note-text" placeholder="Type a new note here... (e.g., 'Go back to Fisher Creek later')"></textarea>
+                <button class="btn-add" onclick="addNote()">Add Note</button>
+            </div>
+            
+            <div id="notes-list" class="note-list">
+                <!-- Notes will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetProgress()">Reset Checkboxes (Keep Notes)</button>
 
     <script>
         // --- Tab Logic ---
@@ -345,7 +467,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const checkboxes = document.querySelectorAll('input[type="checkbox"]');
             
-            // 1. Load saved state
+            // 1. Load saved state for Checkboxes
             checkboxes.forEach(cb => {
                 const id = cb.getAttribute('data-id');
                 const isChecked = localStorage.getItem('fable_tracker_' + id) === 'true';
@@ -358,12 +480,15 @@
                     const checked = e.target.checked;
                     localStorage.setItem('fable_tracker_' + id, checked);
                     toggleRowStyle(e.target, checked);
-                    updateCounters(); // Update stats immediately
+                    updateCounters();
                 });
             });
 
-            // 3. Initial count
+            // 3. Initial stats count
             updateCounters();
+
+            // 4. Load Notes
+            loadNotes();
         });
 
         // Helper to dim the row when checked
@@ -378,18 +503,16 @@
 
         // --- Counter Logic ---
         function updateCounters() {
-            // Count checked keys (data-id starts with 'k')
             const keysFound = document.querySelectorAll('input[type="checkbox"][data-id^="k"]:checked').length;
             document.getElementById('key-count').innerText = keysFound + " / 30";
 
-            // Count checked chests (data-id starts with 'c')
             const chestsOpened = document.querySelectorAll('input[type="checkbox"][data-id^="c"]:checked').length;
             document.getElementById('chest-count').innerText = chestsOpened + " / 12";
         }
 
-        // Reset function
+        // Reset function (Checkbox only)
         function resetProgress() {
-            if(confirm("Are you sure you want to uncheck everything?")) {
+            if(confirm("Are you sure you want to uncheck all keys and chests?")) {
                 const checkboxes = document.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(cb => {
                     cb.checked = false;
@@ -397,8 +520,110 @@
                     localStorage.removeItem('fable_tracker_' + id);
                     toggleRowStyle(cb, false);
                 });
-                updateCounters(); // Reset stats to 0
+                updateCounters();
             }
+        }
+
+        // --- NOTES SYSTEM LOGIC ---
+        let notes = [];
+
+        function loadNotes() {
+            const saved = localStorage.getItem('fable_notes_data');
+            if (saved) {
+                notes = JSON.parse(saved);
+            }
+            renderNotes();
+        }
+
+        function saveNotes() {
+            localStorage.setItem('fable_notes_data', JSON.stringify(notes));
+            renderNotes();
+        }
+
+        function addNote() {
+            const input = document.getElementById('new-note-text');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newNote = {
+                id: Date.now(), // Unique ID based on timestamp
+                text: text
+            };
+
+            notes.push(newNote);
+            input.value = ''; // Clear input
+            saveNotes();
+        }
+
+        function deleteNote(id) {
+            if(confirm("Delete this note?")) {
+                notes = notes.filter(note => note.id !== id);
+                saveNotes();
+            }
+        }
+
+        // Switch a note to "Edit Mode"
+        function editNote(id) {
+            const noteDiv = document.getElementById(`note-${id}`);
+            const noteObj = notes.find(n => n.id === id);
+            if (!noteDiv || !noteObj) return;
+
+            // Replace content with textarea and save button
+            noteDiv.innerHTML = `
+                <textarea id="edit-text-${id}" class="note-content-edit">${noteObj.text}</textarea>
+                <div class="note-actions">
+                    <button class="btn-sm btn-save" onclick="saveEdit(${id})">Save</button>
+                    <button class="btn-sm btn-edit" onclick="renderNotes()">Cancel</button>
+                </div>
+            `;
+        }
+
+        // Save the edited text
+        function saveEdit(id) {
+            const textarea = document.getElementById(`edit-text-${id}`);
+            const newText = textarea.value.trim();
+            
+            if (newText) {
+                const noteIndex = notes.findIndex(n => n.id === id);
+                if (noteIndex > -1) {
+                    notes[noteIndex].text = newText;
+                    saveNotes();
+                }
+            } else {
+                // If empty, ask to delete or cancel
+                deleteNote(id);
+            }
+        }
+
+        function renderNotes() {
+            const list = document.getElementById('notes-list');
+            list.innerHTML = '';
+
+            if (notes.length === 0) {
+                list.innerHTML = '<div class="empty-notes">No notes yet. Add one above!</div>';
+                return;
+            }
+
+            // Sort new notes to the top
+            const sortedNotes = [...notes].reverse();
+
+            sortedNotes.forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'note-card';
+                div.id = `note-${note.id}`;
+                
+                // Escape HTML to prevent injection
+                const safeText = note.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+                div.innerHTML = `
+                    <p class="note-content">${safeText}</p>
+                    <div class="note-actions">
+                        <button class="btn-sm btn-edit" onclick="editNote(${note.id})">Edit</button>
+                        <button class="btn-sm btn-delete" onclick="deleteNote(${note.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
         }
     </script>
 
